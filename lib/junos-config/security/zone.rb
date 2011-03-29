@@ -5,10 +5,10 @@ module JunosConfig
                     :config,
                     :name
       
-      def initialize(raw, config)
-        @raw    = raw
+      def initialize(config, raw)
         @config = config
-        @name   = raw.match(/^\ {8}security\-zone\ (\w+) \{$/)[1]
+        @raw    = raw
+        @name   = raw.match(/^\ {8}security\-zone\ (\S+) \{$/)[1]
       end
     end
   end

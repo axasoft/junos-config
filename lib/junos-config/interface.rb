@@ -4,9 +4,9 @@ module JunosConfig
                   :config,
                   :name
     
-    def initialize(raw, config)
-      @raw    = raw
+    def initialize(config, raw)
       @config = config
+      @raw    = raw
       @name   = raw.match(/^\ {4}(\S+)\ \{$/)[1]
     end
   end

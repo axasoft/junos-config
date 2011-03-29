@@ -52,6 +52,40 @@ describe JunosConfig do
       describe 'security zone 2' do
         it 'should be named vpn' do @config.security_zones[2].name.should == 'vpn' end
       end
+      
+      it 'should have 6 security policies' do
+        @config.security_policies.size.should == 6
+      end
+      describe 'security policy 0' do
+        it 'should be named trust-to-untrust' do @config.security_policies[0].name.should == 'trust-to-untrust' end
+        it 'should be from zone security zone 0 (trust)' do @config.security_policies[0].from_zone.should == @config.security_zones[0] end
+        it 'should be to zone security zone 1 (untrust)' do @config.security_policies[0].to_zone.should == @config.security_zones[1] end
+      end
+      describe 'security policy 1' do
+        it 'should be named FromVPN' do @config.security_policies[1].name.should == 'FromVPN' end
+        it 'should be from zone security zone 2 (vpn)' do @config.security_policies[1].from_zone.should == @config.security_zones[2] end
+        it 'should be to zone security zone 0 (trust)' do @config.security_policies[1].to_zone.should == @config.security_zones[0] end
+      end
+      describe 'security policy 2' do
+        it 'should be named ToVpn' do @config.security_policies[2].name.should == 'ToVpn' end
+        it 'should be from zone security zone 0 (trust)' do @config.security_policies[2].from_zone.should == @config.security_zones[0] end
+        it 'should be to zone security zone 2 (vpn)' do @config.security_policies[2].to_zone.should == @config.security_zones[2] end
+      end
+      describe 'security policy 3' do
+        it 'should be named vpn-to-vpn' do @config.security_policies[3].name.should == 'vpn-to-vpn' end
+        it 'should be from zone security zone 2 (vpn)' do @config.security_policies[3].from_zone.should == @config.security_zones[2] end
+        it 'should be to zone security zone 2 (vpn)' do @config.security_policies[3].to_zone.should == @config.security_zones[2] end
+      end
+      describe 'security policy 4' do
+        it 'should be named voip' do @config.security_policies[4].name.should == 'voip' end
+        it 'should be from zone security zone 1 (untrust)' do @config.security_policies[4].from_zone.should == @config.security_zones[1] end
+        it 'should be to zone security zone 0 (trust)' do @config.security_policies[4].to_zone.should == @config.security_zones[0] end
+      end
+      describe 'security policy 5' do
+        it 'should be named test-rails' do @config.security_policies[5].name.should == 'test-rails' end
+        it 'should be from zone security zone 1 (untrust)' do @config.security_policies[5].from_zone.should == @config.security_zones[1] end
+        it 'should be to zone security zone 0 (trust)' do @config.security_policies[5].to_zone.should == @config.security_zones[0] end
+      end
     end
   end
 end
