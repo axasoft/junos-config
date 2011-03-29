@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{junos-config}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["John Wulff"]
@@ -29,6 +29,8 @@ Gem::Specification.new do |s|
     "lib/junos-config.rb",
     "lib/junos-config/config.rb",
     "lib/junos-config/interface.rb",
+    "lib/junos-config/security/policy.rb",
+    "lib/junos-config/security/zone.rb",
     "spec/junos-config_spec.rb",
     "spec/sample_configs/sample_1",
     "spec/spec_helper.rb"
