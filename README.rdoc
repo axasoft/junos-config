@@ -1,6 +1,6 @@
 = junos-config
 
-Description goes here.
+Parser for Junos (Juniper network gear OS) config files.
 
 == Contributing to junos-config
  
