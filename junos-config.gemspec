@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["John Wulff"]
   s.date = %q{2011-03-29}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{Parser for Junos (Juniper network gear OS) config files.}
   s.email = %q{johnw@orcasnet.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
-  s.summary = %q{Parser for Junos (Juniper network gear OS) config files.}
+  s.summary = %q{Parser for Junos config files.}
   s.test_files = [
     "spec/junos-config_spec.rb",
     "spec/spec_helper.rb"
