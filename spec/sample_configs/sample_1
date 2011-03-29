@@ -1,0 +1,400 @@
+## Last commit: 2011-03-08 09:56:15 PST by root
+version 10.3R1.9;
+groups {
+    node0 {
+        system {
+            host-name test-srx-1;
+        }
+        interfaces {
+            fxp0 {
+                unit 0 {
+                    family inet {
+                        address 10.0.2.253/24;
+                    }
+                }
+            }
+        }
+    }
+    node1 {
+        system {
+            host-name test-srx-2;
+        }
+        interfaces {
+            fxp0 {
+                unit 0 {
+                    family inet {
+                        address 10.0.2.254/24;
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups "${node}";
+system {
+    host-name test-srx;
+    time-zone America/Los_Angeles;
+    name-server {
+        208.67.222.222;
+        208.67.220.220;
+    }
+    services {
+        ssh;
+        web-management {
+            http {
+                interface reth1.0;
+            }
+        }
+    }
+    syslog {
+        archive size 100k files 3;
+        user * {
+            any emergency;
+        }
+        file messages {
+            any critical;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands error;
+        }
+    }
+    max-configurations-on-flash 5;
+    max-configuration-rollbacks 5;
+    license {
+        autoupdate {
+            url https://ae1.juniper.net/junos/key_retrieval;
+        }
+    }
+    ntp {
+        server 66.36.239.104;
+    }
+}
+chassis {
+    cluster {
+        control-link-recovery;
+        reth-count 8;
+        heartbeat-interval 2000;
+        heartbeat-threshold 8;
+        redundancy-group 0 {
+            node 0 priority 100;
+            node 1 priority 90;
+        }
+        redundancy-group 1 {
+            node 0 priority 100;
+            node 1 priority 90;
+            interface-monitor {
+                ge-0/0/0 weight 255;
+                ge-2/0/0 weight 255;
+                ge-2/0/1 weight 255;
+                ge-0/0/1 weight 255;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        gigether-options {
+            redundant-parent reth0;
+        }
+    }
+    ge-0/0/1 {
+        gigether-options {
+            redundant-parent reth1;
+        }
+    }
+    ge-2/0/0 {
+        gigether-options {
+            redundant-parent reth0;
+        }
+    }
+    ge-2/0/1 {
+        gigether-options {
+            redundant-parent reth1;
+        }
+    }
+    fab0 {
+        fabric-options {
+            member-interfaces {
+                fe-0/0/5;
+            }
+        }
+    }
+    fab1 {
+        fabric-options {
+            member-interfaces {
+                fe-2/0/5;
+            }
+        }
+    }
+    reth0 {
+        redundant-ether-options {
+            redundancy-group 1;
+        }
+        unit 0 {
+            family inet {
+                address 9.9.5.181/28;
+            }
+        }
+    }
+    reth1 {
+        redundant-ether-options {
+            redundancy-group 1;
+        }
+        unit 0 {
+            family inet {
+                address 10.0.2.1/24;
+            }
+        }
+    }
+    st0 {
+        unit 0 {
+            multipoint;
+            family inet {
+                address 10.254.254.2/24;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 next-hop 9.9.5.177;
+    }
+}
+protocols {
+    ospf {
+        area 0.0.0.0 {
+            interface reth1.0;
+            interface st0.0 {
+                interface-type p2mp;
+                dynamic-neighbors;
+            }
+        }
+    }
+}
+security {
+    nat {
+        source {
+            rule-set trust-to-untrust {
+                from zone trust;
+                to zone untrust;
+                rule source-nat-rule {
+                    match {
+                        source-address 0.0.0.0/0;
+                    }
+                    then {
+                        source-nat {
+                            interface;
+                        }
+                    }
+                }
+            }
+        }
+        static {
+            rule-set static_untrust {
+                from zone untrust;
+                rule voip2 {
+                    match {
+                        destination-address 9.9.5.179/32;
+                    }
+                    then {
+                        static-nat prefix 10.0.2.3/32;
+                    }
+                }
+                rule voip1 {
+                    match {
+                        destination-address 9.9.5.178/32;
+                    }
+                    then {
+                        static-nat prefix 10.0.2.2/32;
+                    }
+                }
+                rule test-rails {
+                    match {
+                        destination-address 9.9.5.183/32;
+                    }
+                    then {
+                        static-nat prefix 10.0.2.4/32;
+                    }
+                }
+            }
+        }
+        proxy-arp {
+            interface reth0.0 {
+                address {
+                    9.9.5.179/32;
+                    9.9.5.178/32;
+                    9.9.5.183/32;
+                }
+            }
+        }
+    }
+    screen {
+        ids-option untrust-screen {
+            icmp {
+                ping-death;
+            }
+            ip {
+                source-route-option;
+                tear-drop;
+            }
+            tcp {
+                syn-flood {
+                    alarm-threshold 1024;
+                    attack-threshold 200;
+                    source-threshold 1024;
+                    destination-threshold 2048;
+                    timeout 20;
+                }
+                land;
+            }
+        }
+    }
+    zones {
+        security-zone trust {
+            address-book {
+                address voip1 10.0.2.2/32;
+                address voip2 10.0.2.3/32;
+                address test-rails 10.0.2.4/32;
+            }
+            host-inbound-traffic {
+                system-services {
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                reth1.0;
+            }
+        }
+        security-zone untrust {
+            screen untrust-screen;
+            interfaces {
+                reth0.0 {
+                    host-inbound-traffic {
+                        system-services {
+                            ike;
+                            ping;
+                            ssh;
+                        }
+                    }
+                }
+            }
+        }
+        security-zone vpn {
+            host-inbound-traffic {
+                system-services {
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                st0.0;
+            }
+        }
+    }
+    policies {
+        from-zone trust to-zone untrust {
+            policy trust-to-untrust {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        from-zone vpn to-zone trust {
+            policy FromVPN {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        from-zone trust to-zone vpn {
+            policy ToVpn {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        from-zone vpn to-zone vpn {
+            policy vpn-to-vpn {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        from-zone untrust to-zone trust {
+            policy voip {
+                match {
+                    source-address any;
+                    destination-address [ voip1 voip2 ];
+                    application [ junos-sip custom-rtp junos-ping junos-ssh ];
+                }
+                then {
+                    permit;
+                }
+            }
+            policy test-rails {
+                match {
+                    source-address any;
+                    destination-address test-rails;
+                    application [ junos-http junos-https junos-ping junos-ssh ];
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+    }
+    traceoptions {
+        file security size 10k files 2 world-readable;
+    }
+    alg {
+        dns disable;
+        ftp disable;
+        h323 disable;
+        mgcp disable;
+        msrpc disable;
+        sunrpc disable;
+        real disable;
+        rsh disable;
+        rtsp disable;
+        sccp disable;
+        sip disable;
+        sql disable;
+        talk disable;
+        tftp disable;
+        pptp disable;
+    }
+}
+applications {
+    application custom-rtp {
+        protocol udp;
+        destination-port 5000-31000;
+    }
+}
+
+{primary:node0}
