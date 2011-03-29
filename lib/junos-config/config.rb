@@ -1,7 +1,9 @@
 module JunosConfig
   class Config
     attr_reader :config,
-                :interfaces
+                :interfaces,
+                :security_zones,
+                :security_policies
     
     def initialize(config)
       @config = config
@@ -14,6 +16,12 @@ module JunosConfig
     def parse_interfaces(raw)
       @interfaces = raw.scan(/^(\ {4}\S+\ \{$.*?^\ {4}\})$/m).collect do |section|
         Interface.new section[0]
+      end
+    end
+    
+    def parse_security(raw)
+      @security_zones = raw.scan(/^(\ {8}security\-zone\ \w+ \{$.*?^\ {8}\})$/m).collect do |section|
+        Security::Zone.new section[0]
       end
     end
   end
