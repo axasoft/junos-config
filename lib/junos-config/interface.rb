@@ -1,11 +1,13 @@
 module JunosConfig
   class Interface
-    attr_accessor :config,
+    attr_accessor :raw,
+                  :config,
                   :name
     
-    def initialize(config)
+    def initialize(raw, config)
+      @raw    = raw
       @config = config
-      @name   = config.match(/^\ {4}(\S+)\ \{$/)[1]
+      @name   = raw.match(/^\ {4}(\S+)\ \{$/)[1]
     end
   end
 end
