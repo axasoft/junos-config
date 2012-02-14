@@ -5,40 +5,22 @@
 
 Gem::Specification.new do |s|
   s.name = %q{junos-config}
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["John Wulff"]
-  s.date = %q{2011-03-29}
+  s.authors = ["John Wulff", "Aki Immonen"]
+  s.date = %q{2012-02-14}
   s.description = %q{Parser for Junos (Juniper network gear OS) config files.}
-  s.email = %q{johnw@orcasnet.com}
+  s.email = %q{johnw@orcasnet.com aki@axasoft.fi}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
   ]
-  s.files = [
-    ".document",
-    ".rspec",
-    "Gemfile",
-    "Gemfile.lock",
-    "LICENSE.txt",
-    "README.rdoc",
-    "Rakefile",
-    "VERSION",
-    "junos-config.gemspec",
-    "lib/junos-config.rb",
-    "lib/junos-config/config.rb",
-    "lib/junos-config/interface.rb",
-    "lib/junos-config/security/policy.rb",
-    "lib/junos-config/security/zone.rb",
-    "spec/junos-config_spec.rb",
-    "spec/sample_configs/sample_1",
-    "spec/spec_helper.rb"
-  ]
-  s.homepage = %q{http://github.com/jwulff/junos-config}
+  s.files = `git ls-files`.split
+  s.homepage = %q{http://github.com/axasoft/junos-config}
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.6.2}
+  s.rubygems_version = %q{1.8.16}
   s.summary = %q{Parser for Junos config files.}
   s.test_files = [
     "spec/junos-config_spec.rb",

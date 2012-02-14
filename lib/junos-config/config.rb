@@ -1,16 +1,31 @@
 module JunosConfig
   class Config
     attr_reader :raw,
+                :last_changed,
+                :version,
+                :hostname,
                 :interfaces,
                 :security_zones,
-                :security_policies
+                :security_policies,
+                :applications,
+                :application_sets
     
     def initialize(raw)
       @raw = raw
+    
+      m = raw.match(/Last\ changed:\ (.*?)\nversion\ (\S+);/m)
+      @last_changed = m[1] if m
+      @version = m[2] if m
+      
       raw.scan(/^(\w+)\ \{$(.*?)^\}$/m).each do |section|
         method = "parse_#{section[0]}"
         send method, section[1] if respond_to?(method)
       end
+    end
+    
+    def parse_groups(raw_section)
+      m = raw_section.match(/host\-name\ (\S+)-\S;/m)
+      @hostname = m[1]
     end
     
     def parse_interfaces(raw_section)
@@ -31,6 +46,30 @@ module JunosConfig
         end
       end
       @security_policies.flatten!
+    end
+    
+    def parse_applications(raw_section)
+      @applications = raw_section.scan(/^(\ {4}application\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
+        Application.new self, x[0]
+      end
+      @application_lookup = {}
+      @applications.each{|a| @application_lookup[a.name] =  a }
+      @application_sets = raw_section.scan(/^(\ {4}application\-set\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
+        ApplicationSet.new self, x[0]
+      end
+      @application_sets.each{|a| @application_lookup[a.name] =  a }
+      
+      @security_policies.each do |policy|
+        policy.application.collect! {|name| application(name) }
+      end
+    end
+    
+    def application(name)
+      if name =~ /any|ESP|esp|junos\-/
+        # junos internal applications
+        return name
+      end
+      @application_lookup[name]
     end
   end
 end
